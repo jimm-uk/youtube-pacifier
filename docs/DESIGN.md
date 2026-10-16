@@ -5,13 +5,9 @@ names, plus one carefully chosen suggestion, played with no autoplay, no
 recommendations, no comments and no links out. When the list is watched,
 there is nothing more to do — that is the point.
 
-Two implementations live here:
-- **`extension/` — the Brave/Chrome extension (current, from 16 Oct 2026).**
-  Everything below is about this unless it says otherwise.
-- `fetch/`, `portal/`, `serve.py`, `launchd/` — the original Python version
-  (local server at `127.0.0.1:8765` + 07:00 launchd fetch). Superseded;
-  `tools/uninstall-launchd.sh` removes it. Don't extend it; port fixes to
-  the extension instead.
+This project is the Brave/Chrome extension (`extension/`). The original
+Python version (local server + launchd fetch) is a separate project,
+`youtube-pacifier-server`; it is superseded, so new work goes here.
 
 ## Testing: in a VM only, never on the host
 The host holds the user's real browser profile and data, so all tests —
@@ -53,7 +49,7 @@ finished.
 - `lib/youtube.js` — all YouTube access. **The only file that knows
   YouTube's page structure.**
 - `lib/scoring.js` — pure logic (matching, clickbait, selection, suggestion
-  ranking, spin-offs, script check). Unit-tested; mirrors `fetch/scoring.py`.
+  ranking, spin-offs, script check). Unit-tested; ported from the server version's `fetch/scoring.py`.
 - `lib/refresh.js` — the run: resolve → fetch → filter → suggest → store.
   3-minute deadline; a failure keeps the previous list, marked failed.
 - `lib/player.js` — drives the embed over postMessage (extensions may not

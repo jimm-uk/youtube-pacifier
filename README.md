@@ -33,15 +33,10 @@ Options). A handle (the `@name` in a channel's address) is the surest way to
 add a creator. A name alone is searched, and it's left out if more than one
 sizeable channel has that name.
 
-## The older local version
-The first version (a Python fetcher and a local page at
-http://127.0.0.1:8765, refreshed at 07:00 by launchd) is kept for
-reference. Its creator list is `creators.toml` (copy `creators.example.toml`).
-If it's installed, remove it with:
-
-```sh
-~/Projects/youtube-pacifier/tools/uninstall-launchd.sh
-```
+## The older server version
+The first version — a Python fetcher and a local page at
+http://127.0.0.1:8765, refreshed daily by launchd — is now a separate
+project, `youtube-pacifier-server`.
 
 ## For developers
 Design, security model and rules: `docs/DESIGN.md`. Tests run only in a

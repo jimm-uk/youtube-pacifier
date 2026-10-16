@@ -1,5 +1,5 @@
-// Unit tests for the extension's pure logic — the same cases as
-// tests/test_scoring.py, so the Python and JS versions agree.
+// Unit tests for the extension's pure logic — the same cases as the server
+// version's tests/test_scoring.py, so the two implementations agree.
 // Run in the VM: tests/extension/vm-run.sh --test
 import test from "node:test";
 import assert from "node:assert/strict";
