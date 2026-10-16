@@ -145,3 +145,53 @@ the extension ID in URLs/headers/bodies, planted cookies, and rule scope.
   finance seed). Filters exist for clickbait, volume, spin-offs and
   non-Latin scripts; more may be needed — improve with evidence from what's
   actually suggested.
+
+## Hypothetical: publishing to the Chrome Web Store (not pursued)
+Considered and decided against; the extension is loaded unpacked. Brave
+installs from the Chrome Web Store (CWS), so CWS is the relevant store.
+Recorded here in case it comes up again.
+
+**What it would take**
+- A CWS developer account: Google account with 2-step verification, a
+  one-off US$5 fee and identity checks. An EU "trader" declaration makes
+  the developer's name, address, email and phone public.
+- A zip of `extension/` without `creators.local.js` (the empty state covers
+  a fresh install), the `window.pacifierPlayer` test hook removed, and a
+  version scheme.
+- A listing: description of 132 characters or fewer, 1280×800
+  screenshot(s), 440×280 promo tile, category, 128 px icon. No YouTube logo
+  or anything implying it's a YouTube product.
+- Privacy section: single-purpose statement, a justification for each
+  permission, "no remote code", no user data collected, and a published
+  privacy policy.
+- A manual review (host permissions + `declarativeNetRequest`) on first
+  submission and every update: days, sometimes weeks. Public or **unlisted**
+  (link-only) visibility.
+
+**The obstacle: YouTube's terms.** Google owns both YouTube and the store, so
+a reviewer or a later complaint could reject the extension or remove it.
+- `embed-filter.js` hides YouTube branding and links, which YouTube's
+  embedded-player policies forbid.
+- Blocking BotGuard and attestation could be seen as interfering with
+  YouTube's systems (ad blocking alone is accepted on the store).
+- Reading YouTube's pages instead of the official Data API goes against
+  YouTube's terms, and with many users it would hit rate limits for everyone.
+
+A store-safe build would likely keep the click shield but drop the cosmetic
+filter, and move to the Data API. The API needs a key and has a daily quota,
+so it would need a key per user or a backend. Both changes weaken what makes
+Pacifier calm and private.
+
+**Pros:** one-click install anywhere; no developer-mode banner; automatic
+updates; Google's security review. The extension ID would be the same for
+every user (not derived from a local path), which softens the
+`ancestorOrigins` residual risk.
+
+**Cons:** likely rejection or later removal unless features are cut;
+public developer identity (if a trader); every fix waits for review while
+users stay broken; an ongoing support commitment; scraping at scale is
+fragile and more visible.
+
+**If it is ever pursued:** build the zip without local files, load that in
+the VM and run unit, e2e, security and empty-state against it, and check
+that the store's install warnings match the README.
