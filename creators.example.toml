@@ -1,0 +1,12 @@
+# Creator list for the Python version. Copy to creators.toml (ignored by
+# git) and edit. `handle` (the @name in a channel's address) is optional but
+# surest; without it the name is searched, and a name that matches more than
+# one sizeable channel is dropped. A name ending in "…" matches by prefix.
+
+[[creator]]
+name = "Veritasium"
+handle = "@veritasium"
+
+[[creator]]
+name = "3Blue1Brown"
+handle = "@3blue1brown"

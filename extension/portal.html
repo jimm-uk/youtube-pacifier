@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pacifier</title>
+  <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+  <main id="app" aria-live="polite"></main>
+
+  <template id="player-view">
+    <div class="player-view">
+      <a class="back" href="#">← Back to list</a>
+      <h1 class="watch-title"></h1>
+      <p class="meta watch-meta"></p>
+      <div class="stage">
+        <div class="screen">
+          <div class="frame"></div>
+          <!-- Covers the whole picture: YouTube's title, avatar, cards and
+               end-screen links can't be reached. Clicks play or pause. -->
+          <div class="shield" tabindex="0" role="button" aria-label="Play or pause"></div>
+          <div class="paused" hidden>
+            <button type="button" class="resume">Resume</button>
+            <a class="back" href="#">Back to list</a>
+          </div>
+        </div>
+        <div class="controls">
+          <button type="button" class="pp">Play</button>
+          <span class="time">0:00</span>
+          <input type="range" class="seek" min="0" max="1000" value="0" step="1" aria-label="Position">
+          <span class="dur">0:00</span>
+          <button type="button" class="mute">Mute</button>
+          <button type="button" class="cc" aria-pressed="false">Captions</button>
+          <button type="button" class="fullscreen">Full screen</button>
+        </div>
+      </div>
+      <div class="watch-actions">
+        <button type="button" class="toggle-watched"></button>
+      </div>
+    </div>
+  </template>
+
+  <script type="module" src="portal.js"></script>
+</body>
+</html>

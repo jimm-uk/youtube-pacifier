@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>local.pacifier.fetch</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__PYTHON__</string>
+    <string>__ROOT__/fetch/build.py</string>
+  </array>
+  <key>WorkingDirectory</key><string>__ROOT__</string>
+  <!-- Daily at 07:00. If the Mac is asleep then, launchd runs it on wake. -->
+  <key>StartCalendarInterval</key>
+  <dict><key>Hour</key><integer>7</integer><key>Minute</key><integer>0</integer></dict>
+  <key>StandardOutPath</key><string>__ROOT__/data/logs/launchd-fetch.log</string>
+  <key>StandardErrorPath</key><string>__ROOT__/data/logs/launchd-fetch.log</string>
+</dict>
+</plist>

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pacifier settings</title>
+  <link rel="stylesheet" href="portal.css">
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <main>
+    <header class="head-row">
+      <h1>Settings</h1>
+      <a class="back" href="portal.html">← Back to list</a>
+    </header>
+
+    <section>
+      <h2>Creators</h2>
+      <ol class="creators" id="creators"></ol>
+      <form id="add" class="add" autocomplete="off">
+        <label>Name <input name="name" required placeholder="e.g. Veritasium"></label>
+        <label>Handle <input name="handle" placeholder="@veritasium (optional, surest)"></label>
+        <button type="submit">Add</button>
+      </form>
+      <p class="hint">Without a handle the name is searched at the next refresh. A name that matches
+        more than one sizeable channel is left out, and the list's footer says so.</p>
+    </section>
+
+    <section>
+      <h2>Options</h2>
+      <form id="options" class="options">
+        <label>Refresh automatically when the list is older than
+          <input name="auto_refresh_hours" type="number" min="0" max="168" step="1"> hours
+          <span class="hint">(0 = only when you press Refresh now)</span></label>
+        <label>At most <input name="max_per_creator" type="number" min="1" max="9" step="1"> videos per creator</label>
+        <label>Skip videos shorter than <input name="min_minutes" type="number" min="1" max="60" step="1"> minutes</label>
+        <label>Never suggest these creators <span class="hint">(one per line)</span>
+          <textarea name="blocked_creators" rows="3"></textarea></label>
+        <label>Skip titles containing <span class="hint">(one per line)</span>
+          <textarea name="blocked_keywords" rows="3"></textarea></label>
+        <div><button type="submit">Save</button> <span class="saved" id="saved" hidden>Saved.</span></div>
+      </form>
+    </section>
+  </main>
+  <script type="module" src="settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+:root {
+  --bg: #f7f6f2;
+  --fg: #1f1f1d;
+  --muted: #6d6b66;
+  --rule: #e2e0da;
+  --warn: #8a5a00;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161615;
+    --fg: #e7e5e0;
+    --muted: #9a978f;
+    --rule: #2c2b29;
+    --warn: #d9a441;
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+main { max-width: 760px; margin: 0 auto; padding: 40px 16px 64px; }
+
+h1 { font-size: 1.25rem; font-weight: 600; margin: 0; letter-spacing: 0.01em; }
+h2 { font-size: 0.85rem; font-weight: 500; color: var(--muted); margin: 40px 0 4px;
+     text-transform: uppercase; letter-spacing: 0.06em; }
+.head-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.status { color: var(--muted); font-size: 0.9rem; margin: 4px 0 24px; }
+.warn { color: var(--warn); }
+
+.items { list-style: none; margin: 0; padding: 0; }
+.item { border-top: 1px solid var(--rule); }
+.item:last-child { border-bottom: 1px solid var(--rule); }
+.item a { display: block; padding: 14px 0; color: inherit; text-decoration: none; }
+.item a:hover .title, .item a:focus-visible .title { text-decoration: underline; text-underline-offset: 3px; }
+.title { display: block; font-weight: 500; }
+.meta, .reason { display: block; color: var(--muted); font-size: 0.875rem; margin-top: 2px; }
+.reason { font-style: italic; }
+.watched { opacity: 0.45; }
+
+footer { margin-top: 32px; color: var(--muted); font-size: 0.875rem; }
+footer p { margin: 8px 0; }
+a.quiet, a.back { color: var(--muted); }
+a.back { font-size: 0.9rem; text-decoration: none; }
+a.back:hover { text-decoration: underline; }
+.watch-title { margin-top: 16px; font-size: 1.15rem; }
+.watch-meta { margin: 2px 0 16px; }
+
+.stage { background: #000; }
+.screen { position: relative; aspect-ratio: 16 / 9; background: #000; }
+.frame, .frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.stage:fullscreen { display: flex; flex-direction: column; width: 100vw; height: 100vh; }
+.stage:fullscreen .screen { flex: 1; aspect-ratio: auto; }
+
+/* Covers the whole picture; YouTube's own controls are off (controls=0). */
+.shield { position: absolute; inset: 0; cursor: pointer; outline: none; }
+.shield:focus-visible { box-shadow: inset 0 0 0 2px var(--muted); }
+
+.paused {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+  background: #000;
+}
+.paused[hidden] { display: none; }
+.paused a.back { color: #aaa; }
+
+.controls {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; background: #111; color: #ddd; font-size: 0.85rem;
+}
+.controls button { color: #ddd; border-color: #333; padding: 4px 10px; font-size: 0.85rem; }
+.controls button:hover:not(:disabled) { border-color: #777; }
+.controls .pp { min-width: 4.5em; }
+.controls .cc[aria-pressed="true"] { border-color: #aaa; color: #fff; }
+.controls .time, .controls .dur { font-variant-numeric: tabular-nums; min-width: 3.2em; text-align: center; }
+.seek { flex: 1; min-width: 60px; accent-color: #bbb; }
+@media (max-width: 560px) { .controls .cc, .controls .dur { display: none; } }
+
+button {
+  font: inherit; font-size: 0.9rem;
+  color: var(--fg); background: transparent;
+  border: 1px solid var(--rule); border-radius: 6px;
+  padding: 6px 14px; cursor: pointer;
+}
+button:hover:not(:disabled) { border-color: var(--muted); }
+button:disabled { opacity: 0.5; cursor: default; }
+.paused button { color: #eee; border-color: #555; padding: 10px 28px; font-size: 1rem; }
+.watch-actions { display: flex; gap: 8px; margin-top: 12px; }

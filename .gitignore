@@ -1,0 +1,11 @@
+# Local to this machine / this user — never shared
+CLAUDE.md
+creators.toml
+extension/creators.local.js
+tests/extension/vm.env
+data/
+
+# Generated
+__pycache__/
+*.pyc
+.DS_Store

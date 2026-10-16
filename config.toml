@@ -1,0 +1,18 @@
+# Decided 16 Oct 2026: 10 videos in total = 9 from the list + 1 suggestion.
+feed_size = 9
+suggestions = 1
+max_per_creator = 3
+min_duration_seconds = 180   # also excludes Shorts
+refresh = "07:00"            # set in launchd/*.plist; shown in the portal
+
+# A searched name is accepted only if exactly one matching channel has at
+# least this many subscribers.
+min_subscribers_for_match = 10000
+
+[suggestion]
+cooldown_days = 30           # never re-offer a creator within this window
+max_clickbait = 1.0          # mean title score across the channel's recent uploads
+min_recent_uploads = 3       # uploads in the last 180 days
+max_uploads_per_week = 7     # volume over substance is a no
+blocked_creators = []        # channel IDs or names
+blocked_keywords = []        # case-insensitive, matched against titles

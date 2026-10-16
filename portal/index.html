@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Pacifier</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main id="app" aria-live="polite"></main>
+
+  <template id="player-view">
+    <div class="player-view">
+      <a class="back" href="#">← Back to list</a>
+      <h1 class="watch-title"></h1>
+      <p class="meta watch-meta"></p>
+      <div class="stage">
+        <div id="player"></div>
+        <!-- Catches clicks over the picture so YouTube's title link, share
+             and watch-later buttons, cards and end-screen links can't be
+             reached. The control bar below stays usable. -->
+        <div class="shield" tabindex="0" role="button" aria-label="Play or pause"></div>
+        <!-- Covers the YouTube logo link in the control bar. -->
+        <div class="shield-logo" aria-hidden="true"></div>
+        <div class="paused" hidden>
+          <button type="button" class="resume">Resume</button>
+          <a class="back" href="#">Back to list</a>
+        </div>
+      </div>
+      <div class="watch-actions">
+        <button type="button" class="fullscreen">Full screen</button>
+        <button type="button" class="toggle-watched"></button>
+      </div>
+    </div>
+  </template>
+
+  <script src="/app.js"></script>
+</body>
+</html>

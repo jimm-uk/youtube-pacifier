@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015" xmlns:media="http://search.yahoo.com/mrss/" xmlns="http://www.w3.org/2005/Atom">
+ <title>Example Channel</title>
+ <entry>
+  <yt:videoId>older000001</yt:videoId>
+  <yt:channelId>UCxxxxxxxxxxxxxxxxxxxxxx</yt:channelId>
+  <title>An older video</title>
+  <author><name>Example Channel</name></author>
+  <published>2026-10-01T09:00:00+00:00</published>
+  <media:group><media:description>Second description</media:description></media:group>
+ </entry>
+ <entry>
+  <yt:videoId>newer000001</yt:videoId>
+  <yt:channelId>UCxxxxxxxxxxxxxxxxxxxxxx</yt:channelId>
+  <title>A newer video</title>
+  <author><name>Example Channel</name></author>
+  <published>2026-10-10T09:00:00+00:00</published>
+  <media:group><media:description>First description</media:description></media:group>
+ </entry>
+</feed>
