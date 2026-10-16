@@ -38,6 +38,11 @@ finished.
 - **Refresh:** a "Refresh now" button, plus an automatic refresh when the
   portal opens and the list is older than 20 hours (Settings; 0 = button
   only). No background schedule — nothing runs while Pacifier is closed.
+- **Creator priority** (Settings, per creator): **high** — their newest
+  eligible video is guaranteed a place if under 14 days old; **normal** —
+  newest first as space allows; **low** — only fills places left after
+  everyone else. The per-creator cap still applies; the list still displays
+  newest first. Implemented in `selectFeed` (`lib/scoring.js`), unit-tested.
 - **Watched** videos stay greyed until newer ones push them off.
 - **Settings** page: add (name and/or @handle) and remove creators; options.
 
@@ -96,8 +101,11 @@ the extension ID in URLs/headers/bodies, planted cookies, and rule scope.
   them. The unpacked ID is derived from the folder path.
 - **Input:** video/channel IDs must match `^[\w-]{11}$` / `^UC[\w-]{22}$`;
   anything else from YouTube is dropped. Caches keyed by IDs are
-  null-prototype objects. All rendering uses `textContent`; CSP forbids
-  inline script and eval.
+  null-prototype objects. Creator entries (from storage or the seed file)
+  pass through `cleanCreators` (`lib/store.js`): strings must be strings,
+  IDs must match, priority is `high`/`low`/absent — so a malformed entry
+  can't break Settings or a refresh. All rendering uses `textContent`; CSP
+  forbids inline script and eval.
 - **Remaining trust:** YouTube itself (the embed can send our page player
   messages — worst case it ends a video early) and Brave.
 
@@ -127,6 +135,8 @@ the extension ID in URLs/headers/bodies, planted cookies, and rule scope.
 
 ## Decided — do not re-open
 - 10 videos in total: 9 from the list + 1 suggestion. `max_per_creator = 3`.
+- Creator priority is three levels (high / normal / low), not numeric
+  weights.
 - Watched videos stay greyed until they age off.
 - Ambiguous creators are dropped; the user adds them back with a handle.
 - Keyless scraping rather than the YouTube Data API.

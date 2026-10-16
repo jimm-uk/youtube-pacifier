@@ -7,6 +7,7 @@ import { readFileSync } from "node:fs";
 import * as S from "../../extension/lib/scoring.js";
 import * as yt from "../../extension/lib/youtube.js";
 import { buildRules } from "../../extension/lib/net.js";
+import { cleanCreators } from "../../extension/lib/store.js";
 
 const FIXTURES = new URL("../fixtures/", import.meta.url);
 
@@ -64,6 +65,49 @@ test("feed selection", async () => {
   const seen = [];
   await S.selectFeed(entries(), 2, 3, e => { seen.push(e.id); return true; });
   assert.deepEqual(seen, ["a0", "a1"]);
+});
+
+test("feed selection with creator priority", async () => {
+  const ids = l => l.map(e => e.id);
+  const yes = () => true;
+  const now = Date.parse("2026-10-16T12:00:00Z");
+  const prio = map => ({ priorityOf: id => map[id], now });
+  // High: C's newest video is guaranteed a place, even though A and B are newer.
+  assert.deepEqual(ids(await S.selectFeed(entries(), 3, 3, yes, prio({ C: "high" }))), ["a0", "a1", "c0"]);
+  // Low: A only fills places left after B and C.
+  assert.deepEqual(ids(await S.selectFeed(entries(), 6, 3, yes, prio({ A: "low" }))), ["b0", "b1", "b2", "c0", "c1", "c2"]);
+  assert.deepEqual(ids(await S.selectFeed(entries(), 7, 3, yes, prio({ A: "low" }))), ["a0", "b0", "b1", "b2", "c0", "c1", "c2"]);
+  // High but older than two weeks: no guarantee.
+  const later = { priorityOf: id => ({ C: "high" })[id], now: Date.parse("2026-10-30T12:00:00Z") };
+  assert.deepEqual(ids(await S.selectFeed(entries(), 3, 3, yes, later)), ["a0", "a1", "a2"]);
+  // High creator's newest isn't eligible: their next one is guaranteed instead.
+  assert.deepEqual(ids(await S.selectFeed(entries(), 3, 3, e => e.id !== "c0", prio({ C: "high" }))), ["a0", "a1", "c1"]);
+  // The per-creator cap still applies to high-priority creators.
+  assert.deepEqual(ids(await S.selectFeed(entries(), 9, 1, yes, prio({ C: "high" }))), ["a0", "b0", "c0"]);
+});
+
+test("creator entries are cleaned", () => {
+  const out = cleanCreators([
+    { name: "Fine", handle: "@fine", channel_id: "UCxxxxxxxxxxxxxxxxxxxxxx", priority: "high" },
+    { name: "Bad bits", handle: 5, channel_id: "UC__proto__", priority: { toString: "x" }, title: {} },
+    { name: { toString: "x" } }, { name: "   " }, null, 42, "string",
+    { name: "Low one", priority: "low", extra: "<script>" },
+  ]);
+  assert.deepEqual(out, [
+    { name: "Fine", handle: "@fine", channel_id: "UCxxxxxxxxxxxxxxxxxxxxxx", priority: "high" },
+    { name: "Bad bits" },
+    { name: "Low one", priority: "low" },
+  ]);
+  assert.deepEqual(cleanCreators("not a list"), []);
+});
+
+test("unknown priority values act as normal", async () => {
+  const ids = l => l.map(e => e.id);
+  const baseline = ids(await S.selectFeed(entries(), 6, 3, () => true));
+  for (const bad of ["HIGH", "__proto__", "constructor", 123, {}, null, undefined, "<img src=x>"]) {
+    const got = ids(await S.selectFeed(entries(), 6, 3, () => true, { priorityOf: () => bad, now: Date.parse("2026-10-16T12:00:00Z") }));
+    assert.deepEqual(got, baseline, `priority ${JSON.stringify(bad)}`);
+  }
 });
 
 const CFG = { min_recent_uploads: 3, max_uploads_per_week: 7, max_clickbait: 1.0, cooldown_days: 30,

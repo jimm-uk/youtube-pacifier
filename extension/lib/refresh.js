@@ -211,12 +211,15 @@ class Builder {
     const { feed_size: size, max_per_creator: cap } = this.cfg;
 
     this.progress("Checking videos");
-    let items = (await S.selectFeed(entries, size, cap, e => this.eligible(e))).map(e => this.item(e, "list"));
+    const level = p => (p === "high" || p === "low" ? p : "normal");
+    const priority = new Map(this.creators.filter(c => c.channel_id).map(c => [c.channel_id, level(c.priority)]));
+    const opts = { priorityOf: id => priority.get(id), now: this.now };
+    let items = (await S.selectFeed(entries, size, cap, e => this.eligible(e), opts)).map(e => this.item(e, "list"));
     const sugg = this.cfg.suggestions ? await this.suggestion() : null;
     if (sugg) items.push(sugg);
     else {
       // No suggestion worth showing: the 10th slot goes to the list instead.
-      items = (await S.selectFeed(entries, size + 1, cap, e => this.eligible(e))).map(e => this.item(e, "list"));
+      items = (await S.selectFeed(entries, size + 1, cap, e => this.eligible(e), opts)).map(e => this.item(e, "list"));
     }
 
     // Keep the caches small: forget video checks older than 90 days.

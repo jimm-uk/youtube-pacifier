@@ -18,12 +18,29 @@ export const DEFAULT_CONFIG = {
   },
 };
 
+// Creator entries come from storage and a hand-edited seed file, so treat
+// them as untrusted: strings must be strings, IDs must look like IDs, and
+// priority is "high", "low" or absent. Anything else is dropped, so a bad
+// entry can't break Settings, the refresh or the list.
+const str = v => (typeof v === "string" ? v : undefined);
+export function cleanCreator(c) {
+  if (!c || typeof c !== "object" || !str(c.name)?.trim()) return null;
+  const out = { name: c.name };
+  for (const k of ["handle", "title", "dropped"]) if (str(c[k])) out[k] = c[k];
+  if (str(c.channel_id) && /^UC[\w-]{22}$/.test(c.channel_id)) out.channel_id = c.channel_id;
+  if (c.priority === "high" || c.priority === "low") out.priority = c.priority;
+  if (typeof c.subscribers === "number") out.subscribers = c.subscribers;
+  if (str(c.resolved_at)) out.resolved_at = c.resolved_at;
+  return out;
+}
+export const cleanCreators = list => (Array.isArray(list) ? list.map(cleanCreator).filter(Boolean) : []);
+
 // Optional seed list, local to this install (creators.local.js, ignored by
 // git). Missing file → start with an empty list.
 async function seedCreators() {
   try {
     const list = (await import("../creators.local.js")).default;
-    return Array.isArray(list) ? list.filter(c => c && typeof c.name === "string") : [];
+    return cleanCreators(list);
   } catch {
     return [];
   }
@@ -43,9 +60,13 @@ export async function getConfig() {
 }
 
 export async function getCreators() {
-  let c = await store.get("creators");
-  if (!c) { c = await seedCreators(); await store.set("creators", c); }
-  return c;
+  const stored = await store.get("creators");
+  if (stored === undefined) {
+    const seeded = await seedCreators();
+    await store.set("creators", seeded);
+    return seeded;
+  }
+  return cleanCreators(stored);
 }
 
 export async function getWatched() { return store.get("watched", {}); }

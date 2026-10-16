@@ -128,6 +128,15 @@ try {
   const before = await settings.evaluate(`document.querySelectorAll("#creators li").length`);
   await settings.evaluate(`(() => { const f = document.getElementById("add"); f.name.value = "Veritasium"; f.handle.value = "veritasium"; f.requestSubmit(); })()`);
   check("settings: add creator", await waitFor(() => settings.evaluate(`document.querySelectorAll("#creators li").length === ${before + 1}`), 5000));
+  // Priority: set the first creator to High and the second to Low.
+  await settings.evaluate(`(() => {
+    const sel = [...document.querySelectorAll("#creators select")];
+    sel[0].value = "high"; sel[0].dispatchEvent(new Event("change"));
+    setTimeout(() => { sel[1].value = "low"; sel[1].dispatchEvent(new Event("change")); }, 300);
+  })()`);
+  const prios = await waitFor(() => settings.evaluate(`chrome.storage.local.get("creators").then(r =>
+    r.creators[0].priority === "high" && r.creators[1].priority === "low" && [r.creators[0].priority, r.creators[1].priority])`), 5000);
+  check("settings: priority is saved", Array.isArray(prios), JSON.stringify(prios));
   writeFileSync(`${SHOTS}/5-settings.png`, await settings.screenshot());
   await portal.evaluate(`document.querySelector(".refresh").click()`);
   await waitFor(() => portal.evaluate(`!document.querySelector(".refresh").disabled`), 180000, 1000);

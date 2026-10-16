@@ -8,6 +8,7 @@ section { margin-top: 24px; }
 .creators li:last-child { border-bottom: 1px solid var(--rule); }
 .creators .name { display: block; }
 .creators .meta.warn { color: var(--warn); }
+.creators .actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
 .hint { color: var(--muted); font-size: 0.85rem; }
 
 .add { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: end; margin-top: 16px; }
@@ -16,7 +17,7 @@ section { margin-top: 24px; }
 .options label { font-size: 0.95rem; }
 .options textarea { display: block; width: 100%; margin-top: 4px; }
 
-input, textarea {
+input, textarea, select {
   font: inherit; font-size: 0.95rem; color: var(--fg); background: transparent;
   border: 1px solid var(--rule); border-radius: 6px; padding: 6px 8px;
 }

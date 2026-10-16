@@ -9,6 +9,9 @@ you've watched the list, there's nothing more to do.
 ## What it does
 - **Your creators, newest first:** at most 3 videos per creator, so no single
   channel takes over. Shorts, live streams and premieres are skipped.
+- **Priorities:** mark a creator **High** and their newest video always makes
+  the list (if it's under two weeks old), or **Low** and they only fill
+  spare places.
 - **One suggestion:** a recent video from a creator not on your list, chosen
   for calm titles and steady output. It's clearly labelled and never added to
   your list automatically.
@@ -48,9 +51,10 @@ tab.
 - **Refresh now** fetches new videos. Pacifier also refreshes by itself when
   you open it and the list is more than 20 hours old (change in Settings).
 - **Settings** (link at the bottom of the list, or right-click the icon →
-  Options) is where you add or remove creators. A handle (the `@name` in a
-  channel's address) is the surest way to add one. A name alone is searched,
-  and it's left out if more than one sizeable channel has that name.
+  Options) is where you add or remove creators and set each one's priority
+  (Normal, High or Low). A handle (the `@name` in a channel's address) is the
+  surest way to add one. A name alone is searched, and it's left out if more
+  than one sizeable channel has that name.
 
 ## Limits
 - Pacifier reads YouTube's public pages and feeds rather than an official

@@ -76,21 +76,48 @@ export function meanClickbait(titles) {
 
 // --- feed selection ----------------------------------------------------------
 
-// Newest-first entries -> up to `size` items, honouring the per-creator cap.
-// `eligible(entry)` may be async and is called lazily, newest first, so
-// network checks run only for videos that could make the cut.
-export async function selectFeed(entries, size, maxPerCreator, eligible) {
-  const picked = [], per = new Map();
+// Newest-first entries -> up to `size` items, honouring the per-creator cap
+// and each creator's priority:
+//   high   — their newest eligible video is guaranteed a place if it's
+//            younger than `highMaxAgeDays`;
+//   normal — newest first, as space allows;
+//   low    — only fills places left after everyone else.
+// `eligible(entry)` may be async and is called lazily, so network checks run
+// only for videos that could make the cut. The result is newest first.
+export async function selectFeed(entries, size, maxPerCreator, eligible,
+                                 { priorityOf = () => "normal", now = Date.now(), highMaxAgeDays = 14 } = {}) {
+  const picked = new Set(), per = new Map();
   const sorted = [...entries].sort((a, b) => b.published.localeCompare(a.published));
+  const take = async e => {
+    if (picked.size >= size || picked.has(e)) return false;
+    if ((per.get(e.channel_id) || 0) >= maxPerCreator) return false;
+    if (!(await eligible(e))) return false;
+    picked.add(e);
+    per.set(e.channel_id, (per.get(e.channel_id) || 0) + 1);
+    return true;
+  };
+  const prio = e => priorityOf(e.channel_id) || "normal";
+
+  // 1. Each high-priority creator's newest recent video (one each).
+  const maxAge = highMaxAgeDays * 86400e3;
+  const done = new Set();
   for (const e of sorted) {
-    if (picked.length >= size) break;
-    if ((per.get(e.channel_id) || 0) >= maxPerCreator) continue;
-    if (await eligible(e)) {
-      picked.push(e);
-      per.set(e.channel_id, (per.get(e.channel_id) || 0) + 1);
-    }
+    if (picked.size >= size) break;
+    if (prio(e) !== "high" || done.has(e.channel_id)) continue;
+    if (now - Date.parse(e.published) > maxAge) { done.add(e.channel_id); continue; }
+    if (await take(e)) done.add(e.channel_id);
   }
-  return picked;
+  // 2. Everyone except low priority, newest first.
+  for (const e of sorted) {
+    if (picked.size >= size) break;
+    if (prio(e) !== "low") await take(e);
+  }
+  // 3. Low priority, only if places remain.
+  for (const e of sorted) {
+    if (picked.size >= size) break;
+    if (prio(e) === "low") await take(e);
+  }
+  return sorted.filter(e => picked.has(e));
 }
 
 // --- suggestion --------------------------------------------------------------

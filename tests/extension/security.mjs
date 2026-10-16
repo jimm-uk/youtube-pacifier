@@ -18,6 +18,7 @@ const EXT = `chrome-extension://${ID}`;
 // --- capture every request + header in every target --------------------------
 const requests = new Map();
 const contexts = [];   // { id, session, origin, frameId }
+const pageErrors = []; // exceptions thrown in extension pages
 cdp.on(m => {
   const p = m.params || {};
   if (m.method === "Target.attachedToTarget") {
@@ -37,6 +38,8 @@ cdp.on(m => {
   } else if (m.method === "Network.loadingFailed") {
     const r = requests.get(p.requestId) || {};
     requests.set(p.requestId, { ...r, failed: p.errorText });
+  } else if (m.method === "Runtime.exceptionThrown") {
+    pageErrors.push(p.exceptionDetails?.exception?.description || p.exceptionDetails?.text);
   } else if (m.method === "Runtime.executionContextCreated") {
     contexts.push({ id: p.context.id, session: m.sessionId, origin: p.context.origin, aux: p.context.auxData });
   }
@@ -92,6 +95,9 @@ try {
     await chrome.storage.local.set({ feed, config: { auto_refresh_hours: 0 } });
     const c = (await chrome.storage.local.get("creators")).creators;
     c.push({ name: P[0], handle: P[2], dropped: P[1] });
+    // Hostile priority values (the name above also feeds the menu's aria-label).
+    const BAD = [P[0], "__proto__", "constructor", { toString: "x", valueOf: 1 }, 123, null, "HIGH"];
+    BAD.forEach((v, i) => { c[i].priority = v; });
     await chrome.storage.local.set({ creators: c });
   })()`);
   await portal.evaluate(`location.reload()`);
@@ -110,6 +116,16 @@ try {
     literal: document.body.textContent.includes("<img src=x onerror") })`);
   check("poisoned titles/channels/reasons don't execute (portal)", !portalState.pwned && portalState.injected === 0 && portalState.literal, JSON.stringify(portalState));
   check("poisoned creator names don't execute (settings)", !settingsState.pwned && settingsState.injected === 0 && settingsState.literal, JSON.stringify(settingsState));
+  const menus = await settingsPage.evaluate(`[...document.querySelectorAll("#creators select")].map(s => s.value)`);
+  check("poisoned priorities show a valid menu choice (never blank)",
+        menus.length > 7 && menus.every(v => ["normal", "high", "low"].includes(v)), JSON.stringify(menus.slice(0, 8)));
+  // A refresh must still work with the poisoned priorities in storage.
+  const errorsBefore = pageErrors.length;
+  await portal.evaluate(`document.querySelector(".refresh").click()`);
+  await waitFor(() => portal.evaluate(`!!document.querySelector(".refresh") && !document.querySelector(".refresh").disabled`), 200000, 1000);
+  const afterPoison = await portal.evaluate(`chrome.storage.local.get("feed").then(r => ({ status: r.feed.status, items: r.feed.items.length, error: r.feed.error }))`);
+  check("refresh survives poisoned priorities", afterPoison.status === "ok" && afterPoison.items === 10 && pageErrors.length === errorsBefore,
+        JSON.stringify(afterPoison) + (pageErrors.length > errorsBefore ? " errors: " + pageErrors.slice(errorsBefore).join(" | ") : ""));
   await portal.evaluate(`location.hash = "#watch/" + encodeURIComponent('<img src=x onerror=window.__pwned=1>')`);
   await sleep(800);
   check("malicious #watch/ hash is ignored", await portal.evaluate(`!window.__pwned && !document.querySelector(".stage")`));

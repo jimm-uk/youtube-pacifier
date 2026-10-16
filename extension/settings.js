@@ -24,9 +24,26 @@ async function renderCreators() {
       await store.set("creators", now);
       renderCreators();
     };
+    const priority = document.createElement("select");
+    priority.setAttribute("aria-label", `Priority for ${c.name}`);
+    for (const [value, label] of [["normal", "Normal"], ["high", "High"], ["low", "Low"]]) {
+      const o = document.createElement("option");
+      o.value = value;
+      o.textContent = label;
+      priority.append(o);
+    }
+    priority.value = c.priority || "normal";
+    priority.onchange = async () => {
+      const now = await getCreators();
+      if (priority.value === "normal") delete now[i].priority; else now[i].priority = priority.value;
+      await store.set("creators", now);
+    };
     const text = document.createElement("span");
     text.append(name, detail);
-    li.append(text, remove);
+    const actions = document.createElement("span");
+    actions.className = "actions";
+    actions.append(priority, remove);
+    li.append(text, actions);
     return li;
   }));
 }
