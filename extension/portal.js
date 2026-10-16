@@ -72,7 +72,7 @@ function renderList() {
 
   const header = el("header", {},
     el("div", { class: "head-row" },
-      el("h1", {}, "Pacifier"),
+      el("h1", {}, el("span", { class: "mark", "aria-hidden": "true" }), "Pacifier"),
       el("button", { type: "button", class: "refresh", onclick: runRefresh,
                      ...(refreshing ? { disabled: "" } : {}) }, "Refresh now")),
     statusLine());

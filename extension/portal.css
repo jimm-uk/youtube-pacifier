@@ -29,6 +29,13 @@ h1 { font-size: 1.25rem; font-weight: 600; margin: 0; letter-spacing: 0.01em; }
 h2 { font-size: 0.85rem; font-weight: 500; color: var(--muted); margin: 40px 0 4px;
      text-transform: uppercase; letter-spacing: 0.06em; }
 .head-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+/* The pacifier drawing, in the text colour at low contrast (follows dark mode). */
+.mark {
+  display: inline-block; width: 1.15em; height: 1.15em; margin-right: 0.4em; vertical-align: -0.2em;
+  background: currentColor; opacity: 0.45;
+  -webkit-mask: url(icons/mark.png) center / contain no-repeat;
+  mask: url(icons/mark.png) center / contain no-repeat;
+}
 .status { color: var(--muted); font-size: 0.9rem; margin: 4px 0 24px; }
 .warn { color: var(--warn); }
 
