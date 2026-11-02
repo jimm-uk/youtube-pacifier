@@ -30,8 +30,9 @@ Screenshots land in the guest at `/tmp/pacifier-shots/`. Stop the VM when
 finished.
 
 ## What it does
-- **10 videos in total:** the 9 newest eligible videos from the creator list,
-  at most 3 per creator, plus 1 suggestion. No archive, no pagination.
+- **10 videos in total by default** (Settings: 3–30, stored as `feed_size`
+  = total − 1): the newest eligible videos from the creator list, at most 3
+  per creator, plus 1 suggestion. No archive, no pagination.
 - **Suggestion:** 1 recent video (≤ 60 days) from a creator *not* on the
   list, labelled "Suggestion — not on your list". If nothing passes the
   bar, the 10th slot goes to the list. Never added to the list automatically.
@@ -134,7 +135,8 @@ the extension ID in URLs/headers/bodies, planted cookies, and rule scope.
 - Status vocabulary: set `review`, never `done` — only the user marks `done`.
 
 ## Decided — do not re-open
-- 10 videos in total: 9 from the list + 1 suggestion. `max_per_creator = 3`.
+- 1 suggestion; the rest from the list. List size is a setting (default 10).
+  `max_per_creator = 3` by default.
 - Creator priority is three levels (high / normal / low), not numeric
   weights.
 - Watched videos stay greyed until they age off.

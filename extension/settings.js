@@ -64,6 +64,7 @@ document.getElementById("add").onsubmit = async e => {
 const opts = document.getElementById("options");
 async function renderOptions() {
   const c = await getConfig();
+  opts.list_size.value = c.feed_size + c.suggestions;
   opts.auto_refresh_hours.value = c.auto_refresh_hours;
   opts.max_per_creator.value = c.max_per_creator;
   opts.min_minutes.value = Math.round(c.min_duration_seconds / 60);
@@ -74,6 +75,7 @@ opts.onsubmit = async e => {
   e.preventDefault();
   const c = await getConfig();
   const int = (v, lo, hi, d) => { const n = parseInt(v, 10); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : d; };
+  c.feed_size = int(opts.list_size.value, 3, 30, c.feed_size + c.suggestions) - c.suggestions;
   c.auto_refresh_hours = int(opts.auto_refresh_hours.value, 0, 168, c.auto_refresh_hours);
   c.max_per_creator = int(opts.max_per_creator.value, 1, 9, c.max_per_creator);
   c.min_duration_seconds = 60 * int(opts.min_minutes.value, 1, 60, c.min_duration_seconds / 60);

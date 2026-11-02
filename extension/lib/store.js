@@ -2,7 +2,7 @@
 // here, in this browser profile only (no sync).
 
 export const DEFAULT_CONFIG = {
-  feed_size: 9,                  // decided 16 Oct 2026: 9 from the list + 1 suggestion
+  feed_size: 9,                  // videos from the list; with the suggestion, 10 in total (Settings: 3–30)
   suggestions: 1,
   max_per_creator: 3,
   min_duration_seconds: 180,     // also excludes Shorts
@@ -56,7 +56,10 @@ export const store = {
 
 export async function getConfig() {
   const c = await store.get("config", {});
-  return { ...DEFAULT_CONFIG, ...c, suggestion: { ...DEFAULT_CONFIG.suggestion, ...(c.suggestion || {}) } };
+  const out = { ...DEFAULT_CONFIG, ...c, suggestion: { ...DEFAULT_CONFIG.suggestion, ...(c.suggestion || {}) } };
+  // Stored values are untrusted: keep the list size a sane whole number.
+  if (!Number.isInteger(out.feed_size) || out.feed_size < 2 || out.feed_size > 29) out.feed_size = DEFAULT_CONFIG.feed_size;
+  return out;
 }
 
 export async function getCreators() {

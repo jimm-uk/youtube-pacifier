@@ -137,11 +137,17 @@ try {
   const prios = await waitFor(() => settings.evaluate(`chrome.storage.local.get("creators").then(r =>
     r.creators[0].priority === "high" && r.creators[1].priority === "low" && [r.creators[0].priority, r.creators[1].priority])`), 5000);
   check("settings: priority is saved", Array.isArray(prios), JSON.stringify(prios));
+  // List size: 6 videos at a time.
+  await settings.evaluate(`(() => { const f = document.getElementById("options"); f.list_size.value = "6"; f.requestSubmit(); })()`);
+  const sized = await waitFor(() => settings.evaluate(`chrome.storage.local.get("config").then(r => r.config?.feed_size === 5)`), 5000);
+  check("settings: list size is saved", sized);
   writeFileSync(`${SHOTS}/5-settings.png`, await settings.screenshot());
   await portal.evaluate(`document.querySelector(".refresh").click()`);
   await waitFor(() => portal.evaluate(`!document.querySelector(".refresh").disabled`), 180000, 1000);
   const resolved = await settings.evaluate(`chrome.storage.local.get("creators").then(r => r.creators.find(c => c.handle === "@veritasium"))`);
   check("Refresh now resolves the new handle", resolved?.channel_id?.startsWith("UC"), JSON.stringify(resolved));
+  const shown = await portal.evaluate(`document.querySelectorAll(".item").length`);
+  check("list shows the chosen number of videos", shown === 6, `${shown} items`);
   await settings.evaluate(`location.reload()`);
   await waitFor(() => settings.evaluate(`document.querySelectorAll("#creators li").length === ${before + 1}`), 10000);
   await settings.evaluate(`[...document.querySelectorAll("#creators li")].at(-1).querySelector("button").click()`);

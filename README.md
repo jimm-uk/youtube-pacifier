@@ -1,8 +1,8 @@
 # Pacifier
 
 A calm way to watch YouTube. Pacifier is a browser extension for Brave or
-Chrome. It shows ten videos at a time: the 9 newest from creators you choose,
-plus 1 suggestion from a similar creator. Nothing else is on the page: no
+Chrome. It shows ten videos at a time (you can change that): the newest from
+creators you choose, plus 1 suggestion from a similar creator. Nothing else is on the page: no
 thumbnails, no autoplay, no recommendations, no comments, no links out. Once
 you've watched the list, there's nothing more to do.
 
