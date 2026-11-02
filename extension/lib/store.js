@@ -54,12 +54,47 @@ export const store = {
   set(key, value) { return chrome.storage.local.set({ [key]: value }); },
 };
 
+// Options from storage or an imported file are untrusted: keep only the
+// user-settable ones, as whole numbers in range or short lists of strings.
+// Everything else comes from the defaults.
+const intIn = (v, lo, hi, d) => (Number.isInteger(v) && v >= lo && v <= hi ? v : d);
+const strList = v => (Array.isArray(v) ? v.filter(x => typeof x === "string" && x.trim()).map(x => x.slice(0, 200)).slice(0, 500) : []);
+export function cleanConfig(c) {
+  const d = DEFAULT_CONFIG, s = (c && typeof c === "object" ? c : {});
+  const sg = s.suggestion && typeof s.suggestion === "object" ? s.suggestion : {};
+  return {
+    ...d,
+    feed_size: intIn(s.feed_size, 2, 29, d.feed_size),
+    max_per_creator: intIn(s.max_per_creator, 1, 9, d.max_per_creator),
+    min_duration_seconds: intIn(s.min_duration_seconds, 60, 3600, d.min_duration_seconds),
+    auto_refresh_hours: intIn(s.auto_refresh_hours, 0, 168, d.auto_refresh_hours),
+    suggestion: { ...d.suggestion, blocked_creators: strList(sg.blocked_creators), blocked_keywords: strList(sg.blocked_keywords) },
+  };
+}
+
 export async function getConfig() {
-  const c = await store.get("config", {});
-  const out = { ...DEFAULT_CONFIG, ...c, suggestion: { ...DEFAULT_CONFIG.suggestion, ...(c.suggestion || {}) } };
-  // Stored values are untrusted: keep the list size a sane whole number.
-  if (!Number.isInteger(out.feed_size) || out.feed_size < 2 || out.feed_size > 29) out.feed_size = DEFAULT_CONFIG.feed_size;
-  return out;
+  return cleanConfig(await store.get("config", {}));
+}
+
+// --- export / load ----------------------------------------------------------
+// A small JSON file with the creators and options, so they survive removing
+// and reinstalling the extension, or move to another browser.
+export const SETTINGS_FILE_VERSION = 1;
+export const MAX_SETTINGS_FILE_BYTES = 1_000_000;
+
+export function settingsFile(creators, config) {
+  return { app: "pacifier", version: SETTINGS_FILE_VERSION, exported_at: new Date().toISOString(),
+           creators: cleanCreators(creators), config: cleanConfig(config) };
+}
+
+// Parse an imported file. Throws a plain-English Error if it isn't one of ours.
+export function parseSettingsFile(text) {
+  if (typeof text !== "string" || text.length > MAX_SETTINGS_FILE_BYTES) throw new Error("That file is too large to be a Pacifier settings file.");
+  let data;
+  try { data = JSON.parse(text); } catch { throw new Error("That file isn't valid JSON."); }
+  if (!data || data.app !== "pacifier" || !Array.isArray(data.creators)) throw new Error("That isn't a Pacifier settings file.");
+  if (data.version > SETTINGS_FILE_VERSION) throw new Error("That file comes from a newer version of Pacifier.");
+  return { creators: cleanCreators(data.creators), config: cleanConfig(data.config) };
 }
 
 export async function getCreators() {

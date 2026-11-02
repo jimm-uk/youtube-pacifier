@@ -23,3 +23,10 @@ input, textarea, select {
 }
 input[type="number"] { width: 4.5em; }
 .saved { color: var(--muted); font-size: 0.9rem; margin-left: 8px; }
+.backup { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+.file-button {
+  font-size: 0.9rem; border: 1px solid var(--rule); border-radius: 6px; padding: 6px 14px; cursor: pointer;
+}
+.file-button:hover, .file-button:focus-within { border-color: var(--muted); }
+.file-button input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.backup .warn { color: var(--warn); }

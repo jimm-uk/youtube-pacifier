@@ -7,7 +7,7 @@ import { readFileSync } from "node:fs";
 import * as S from "../../extension/lib/scoring.js";
 import * as yt from "../../extension/lib/youtube.js";
 import { buildRules } from "../../extension/lib/net.js";
-import { cleanCreators } from "../../extension/lib/store.js";
+import { cleanCreators, cleanConfig, settingsFile, parseSettingsFile, DEFAULT_CONFIG } from "../../extension/lib/store.js";
 
 const FIXTURES = new URL("../fixtures/", import.meta.url);
 
@@ -197,4 +197,36 @@ test("hostile feed data is dropped", () => {
   assert.deepEqual(items.map(i => i.id), ["good_id-123"]);
   assert.ok(yt.isVideoId("dQw4w9WgXcQ") && !yt.isVideoId("__proto__") && !yt.isVideoId("../../../etc"));
   assert.ok(yt.isChannelId("UCsBjURrPoezykLs9EqgamOA") && !yt.isChannelId("UC__proto__"));
+});
+
+test("options are cleaned", () => {
+  const c = cleanConfig({ feed_size: 5, max_per_creator: "9", min_duration_seconds: 1e9, auto_refresh_hours: 0,
+                          suggestion: { blocked_creators: ["A", 5, "", { x: 1 }], blocked_keywords: "nope", max_clickbait: 99 },
+                          __proto__: { polluted: true }, extra: "<script>" });
+  assert.equal(c.feed_size, 5);
+  assert.equal(c.max_per_creator, DEFAULT_CONFIG.max_per_creator);
+  assert.equal(c.min_duration_seconds, DEFAULT_CONFIG.min_duration_seconds);
+  assert.equal(c.auto_refresh_hours, 0);
+  assert.deepEqual(c.suggestion.blocked_creators, ["A"]);
+  assert.deepEqual(c.suggestion.blocked_keywords, []);
+  assert.equal(c.suggestion.max_clickbait, DEFAULT_CONFIG.suggestion.max_clickbait);
+  assert.equal(c.extra, undefined);
+  assert.equal(c.polluted, undefined);
+  assert.deepEqual(cleanConfig(null), cleanConfig({}));
+});
+
+test("settings file round-trips and rejects bad files", () => {
+  const creators = [{ name: "Veritasium", handle: "@veritasium", priority: "high" }, { name: "3Blue1Brown" }];
+  const file = settingsFile(creators, { feed_size: 6 });
+  const back = parseSettingsFile(JSON.stringify(file));
+  assert.deepEqual(back.creators, creators);
+  assert.equal(back.config.feed_size, 6);
+  assert.throws(() => parseSettingsFile("not json"), /valid JSON/);
+  assert.throws(() => parseSettingsFile(JSON.stringify({ creators: [] })), /isn't a Pacifier/);
+  assert.throws(() => parseSettingsFile(JSON.stringify({ app: "pacifier", creators: [], version: 99 })), /newer version/);
+  assert.throws(() => parseSettingsFile("x".repeat(1_000_001)), /too large/);
+  const poisoned = parseSettingsFile(JSON.stringify({ app: "pacifier", version: 1,
+    creators: [{ name: "ok", priority: { toString: "x" } }, { name: 5 }, null], config: { feed_size: "lots" } }));
+  assert.deepEqual(poisoned.creators, [{ name: "ok" }]);
+  assert.equal(poisoned.config.feed_size, DEFAULT_CONFIG.feed_size);
 });

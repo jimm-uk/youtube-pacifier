@@ -46,6 +46,18 @@
         <div><button type="submit">Save</button> <span class="saved" id="saved" hidden>Saved.</span></div>
       </form>
     </section>
+
+    <section>
+      <h2>Backup</h2>
+      <p class="hint">Save your creators and options to a file, and load them back after reinstalling
+        Pacifier or on another browser. Loading replaces the current creators and options.</p>
+      <div class="backup">
+        <button type="button" id="export">Export settings</button>
+        <label class="file-button">Load settings…
+          <input type="file" id="import" accept=".json,application/json"></label>
+        <span class="saved" id="backup-status" role="status"></span>
+      </div>
+    </section>
   </main>
   <script type="module" src="settings.js"></script>
 </body>

@@ -56,6 +56,13 @@ tab.
   surest way to add one. A name alone is searched, and it's left out if more
   than one sizeable channel has that name.
 
+## Updating and backups
+To update, replace the files (e.g. `git pull`), then click the reload arrow
+on Pacifier in `brave://extensions`. Your creators and options are kept.
+Removing the extension deletes them, so before removing it or moving to
+another browser, use **Settings → Backup → Export settings**, and **Load
+settings…** afterwards.
+
 ## Limits
 - Pacifier reads YouTube's public pages and feeds rather than an official
   API. When YouTube changes them, parts can break until the extension is

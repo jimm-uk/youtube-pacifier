@@ -1,4 +1,4 @@
-import { store, getConfig, getCreators } from "./lib/store.js";
+import { store, getConfig, getCreators, settingsFile, parseSettingsFile, MAX_SETTINGS_FILE_BYTES } from "./lib/store.js";
 
 const list = document.getElementById("creators");
 const lines = s => s.split("\n").map(x => x.trim()).filter(Boolean);
@@ -85,6 +85,38 @@ opts.onsubmit = async e => {
   const saved = document.getElementById("saved");
   saved.hidden = false;
   setTimeout(() => { saved.hidden = true; }, 2000);
+};
+
+// --- backup -----------------------------------------------------------------
+const backupStatus = document.getElementById("backup-status");
+const say = (msg, warn = false) => { backupStatus.textContent = msg; backupStatus.classList.toggle("warn", warn); };
+
+document.getElementById("export").onclick = async () => {
+  const data = settingsFile(await getCreators(), await getConfig());
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `pacifier-settings-${data.exported_at.slice(0, 10)}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  say(`Exported ${data.creators.length} creators and your options.`);
+};
+
+document.getElementById("import").onchange = async e => {
+  const file = e.target.files?.[0];
+  e.target.value = "";   // allow loading the same file again
+  if (!file) return;
+  try {
+    if (file.size > MAX_SETTINGS_FILE_BYTES) throw new Error("That file is too large to be a Pacifier settings file.");
+    const { creators, config } = parseSettingsFile(await file.text());
+    await store.set("creators", creators);
+    await store.set("config", config);
+    await renderCreators();
+    await renderOptions();
+    say(`Loaded ${creators.length} creators and options. Press Refresh now on the list to update it.`);
+  } catch (err) {
+    say(err.message || "Couldn't load that file.", true);
+  }
 };
 
 renderCreators();

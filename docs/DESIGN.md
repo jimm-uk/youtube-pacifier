@@ -23,8 +23,13 @@ needs Brave and Node 22+.
 - `tests/extension/vm-run.sh security.mjs` — attack/leak suite (below).
 - `tests/extension/vm-run.sh empty-state.mjs` — a fresh install without
   `creators.local.js` starts empty and points to Settings.
+- `… refresh-lock.mjs` — an interrupted refresh never blocks the next one;
+  a refresh running in another tab is announced.
+- `… settings-io.mjs` — export, wipe, load back; hostile files rejected or
+  cleaned.
 - `diagnose.mjs` (one refresh with every fetch timed) and `probe-embed.mjs`
-  (lists what the YouTube embed shows) for debugging.
+  (lists what the YouTube embed shows) for debugging; `shot-settings.mjs`
+  screenshots the Settings page.
 
 Screenshots land in the guest at `/tmp/pacifier-shots/`. Stop the VM when
 finished.
@@ -45,7 +50,13 @@ finished.
   everyone else. The per-creator cap still applies; the list still displays
   newest first. Implemented in `selectFeed` (`lib/scoring.js`), unit-tested.
 - **Watched** videos stay greyed until newer ones push them off.
-- **Settings** page: add (name and/or @handle) and remove creators; options.
+- **Settings** page: add (name and/or @handle) and remove creators; options;
+  **Backup**: export creators + options to a JSON file and load it back
+  (replaces both). Updating the unpacked extension via reload keeps
+  storage; removing it doesn't — hence the backup.
+- **Refresh lock:** `running` in storage records `{at, tab}`. It blocks only
+  while that tab is still open (and for at most 4 minutes); otherwise it's
+  ignored.
 
 ## Layout (`extension/`)
 - `manifest.json` — MV3. Permissions: `storage`, `declarativeNetRequest`;
@@ -105,7 +116,11 @@ the extension ID in URLs/headers/bodies, planted cookies, and rule scope.
   null-prototype objects. Creator entries (from storage or the seed file)
   pass through `cleanCreators` (`lib/store.js`): strings must be strings,
   IDs must match, priority is `high`/`low`/absent — so a malformed entry
-  can't break Settings or a refresh. All rendering uses `textContent`; CSP
+  can't break Settings or a refresh. Options pass through `cleanConfig`
+  (known keys only, whole numbers in range, short string lists). An imported
+  settings file goes through both (`parseSettingsFile`), and is rejected if
+  it isn't JSON, isn't ours, is from a newer version or is over 1 MB. All
+  rendering uses `textContent`; CSP
   forbids inline script and eval.
 - **Remaining trust:** YouTube itself (the embed can send our page player
   messages — worst case it ends a video early) and Brave.
