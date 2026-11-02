@@ -230,11 +230,22 @@ class Builder {
   }
 }
 
-// Run a refresh unless one is already running (e.g. in another tab).
-export async function refresh(progress) {
+// Is another, still-open Pacifier tab refreshing right now? The "running"
+// marker records its owner, so one left behind by a closed tab — or by this
+// tab before it reloaded — is ignored instead of blocking for minutes.
+async function busyElsewhere(tabId) {
   const lock = await store.get("running");
-  if (lock && Date.now() - lock < LOCK_MINUTES * 60e3) return { skipped: true };
-  await store.set("running", Date.now());
+  if (!lock || typeof lock !== "object") return false;          // none, or old format
+  if (Date.now() - lock.at > LOCK_MINUTES * 60e3) return false;  // stale
+  if (lock.tab === tabId) return false;                         // ours, from before a reload
+  try { await chrome.tabs.get(lock.tab); return true; } catch { return false; }  // owner closed
+}
+
+// Run a refresh unless another open tab is already doing one.
+export async function refresh(progress, tabId) {
+  if (await busyElsewhere(tabId)) return { skipped: true };
+  const mine = { at: Date.now(), tab: tabId };
+  await store.set("running", mine);
   let stage = "starting";   // recorded on failure, to show where a stall happened
   const track = msg => { stage = msg; progress?.(msg); };
   try {
@@ -250,6 +261,7 @@ export async function refresh(progress) {
     await store.set("feed", failed);
     return failed;
   } finally {
-    await chrome.storage.local.remove("running");
+    const lock = await store.get("running");
+    if (lock?.at === mine.at && lock?.tab === mine.tab) await chrome.storage.local.remove("running");
   }
 }

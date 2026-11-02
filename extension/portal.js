@@ -13,6 +13,7 @@ let player = null;
 let refreshing = null;   // progress text while a refresh runs
 let keyHandler = null;   // player keyboard shortcuts, only while watching
 let noCreators = false;  // fresh install without a seed list
+let waitingForOther = false;  // another Pacifier tab is refreshing
 
 // --- formatting -------------------------------------------------------------
 
@@ -51,6 +52,7 @@ function itemRow(item) {
 
 function statusLine() {
   if (refreshing) return el("p", { class: "status" }, refreshing + "…");
+  if (waitingForOther) return el("p", { class: "status" }, "A refresh is already running in another Pacifier tab…");
   if (noCreators) return el("p", { class: "status" }, "No creators yet — add some in ",
                             el("a", { href: "settings.html" }, "Settings"), ".");
   if (!feed) return el("p", { class: "status" }, "No list yet.");
@@ -104,8 +106,10 @@ async function runRefresh() {
   const result = await refresh(msg => {
     refreshing = msg;
     if (!location.hash) app.querySelector(".status")?.replaceWith(statusLine());
-  });
+  }, myTabId);
   refreshing = null;
+  // Skipped: the other tab's result arrives through storage.onChanged below.
+  waitingForOther = Boolean(result.skipped);
   if (!result.skipped) feed = result;
   if (!location.hash) renderList();
 }
@@ -230,7 +234,11 @@ window.addEventListener("hashchange", route);
 // Another Pacifier tab refreshed: pick up its list.
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "local") return;
-  if (changes.feed) { feed = changes.feed.newValue; if (!location.hash && !refreshing) renderList(); }
+  if (changes.feed) {
+    feed = changes.feed.newValue;
+    waitingForOther = false;
+    if (!location.hash && !refreshing) renderList();
+  }
   if (changes.watched) watched = changes.watched.newValue || {};
 });
 
